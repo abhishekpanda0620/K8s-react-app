@@ -49,11 +49,20 @@ pipeline {
                                 echo "Minikube is already running."
                             fi
 
-                            # Deploy the application using the Docker image
+                            # Check and remove existing deployment and service
+                            if kubectl get deployment react-app; then
+                                kubectl delete deployment react-app
+                                echo "Deleted existing deployment."
+                            fi
+
+                            if kubectl get service react-app; then
+                                kubectl delete service react-app
+                                echo "Deleted existing service."
+                            fi
+
+                            # Deploy the application using the new configuration
                             kubectl apply -f /home/ubuntu/deployment.yaml
                             kubectl apply -f /home/ubuntu/service.yaml
-                            # Expose the deployment
-                            kubectl expose deployment react-app --type=NodePort --port=80
                             # Get the Minikube IP and NodePort
                             minikube_ip=\$(minikube ip)
                             kubectl get services react-app
