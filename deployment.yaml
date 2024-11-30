@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: react-app
-          image: k8s-react-app:latest
+          image: abhishek626/k8s-react-app:latest  # Ensure this image is pushed to Docker Hub
           ports:
             - containerPort: 80
