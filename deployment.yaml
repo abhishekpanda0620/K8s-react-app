@@ -12,8 +12,10 @@ spec:
       labels:
         app: react-app
     spec:
+      imagePullSecrets:
+        - name: dockerhub-secret
       containers:
         - name: react-app
-          image: abhishek626/k8s-react-app:latest  # Ensure this image is pushed to Docker Hub
+          image: abhishek626/k8s-react-app:latest  
           ports:
             - containerPort: 80
