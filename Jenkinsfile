@@ -34,7 +34,6 @@ pipeline {
                 # Use scp to copy files from the Jenkins workspace to EC2
                 scp -o StrictHostKeyChecking=no -i /tmp/ssh_key deployment.yaml ubuntu@${EC2_IP}:/home/ubuntu/
                 scp -o StrictHostKeyChecking=no -i /tmp/ssh_key service.yaml ubuntu@${EC2_IP}:/home/ubuntu/
-                scp -o StrictHostKeyChecking=no -i ~/.docker/config.json ubuntu@${EC2_IP}:~/.docker/config.json
                 ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
                 if ! minikube status | grep -q "Running"; then
                     echo "Starting Minikube..."
@@ -42,8 +41,8 @@ pipeline {
                 else
                     echo "Minikube is already running."
                 fi
-                # Copy deployment and service files
-
+                # Login to Docker Hub
+                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
                 # Deploy the application using the Docker image
                 kubectl apply -f deployment.yaml
                 kubectl apply -f service.yaml
