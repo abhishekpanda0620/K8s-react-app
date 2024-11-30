@@ -27,33 +27,40 @@ pipeline {
         stage('Deploy to EC2 Minikube') {
             steps {
                 withCredentials([file(credentialsId: 'EC2_KP', variable: 'SSH_KEY_FILE')]) {
-                    script {
-                        sh """
-                cp ${SSH_KEY_FILE} /tmp/ssh_key
-                chmod 600 /tmp/ssh_key
-                # Use scp to copy files from the Jenkins workspace to EC2
-                scp -o StrictHostKeyChecking=no -i /tmp/ssh_key deployment.yaml ubuntu@${EC2_IP}:/home/ubuntu/
-                scp -o StrictHostKeyChecking=no -i /tmp/ssh_key service.yaml ubuntu@${EC2_IP}:/home/ubuntu/
-                ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
-                if ! minikube status | grep -q "Running"; then
-                    echo "Starting Minikube..."
-                    minikube start --driver=docker
-                else
-                    echo "Minikube is already running."
-                fi
-                # Login to Docker Hub
-                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-                # Deploy the application using the Docker image
-                kubectl apply -f deployment.yaml
-                kubectl apply -f service.yaml
-                # Expose the deployment
-                kubectl expose deployment react-app --type=NodePort --port=80
-                # Get the Minikube IP and NodePort
-                minikube_ip=\$(minikube ip)
-                kubectl get services react-app
-                echo "Access your application at: http://\${minikube_ip}:<NodePort>"
-                '
-                """
+                    // Retrieve Docker Hub credentials again for access within SSH
+                    withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        script {
+                            sh """
+                            cp ${SSH_KEY_FILE} /tmp/ssh_key
+                            chmod 600 /tmp/ssh_key
+
+                            # Use scp to copy files from the Jenkins workspace to EC2
+                            scp -o StrictHostKeyChecking=no -i /tmp/ssh_key deployment.yaml ubuntu@${EC2_IP}:/home/ubuntu/
+                            scp -o StrictHostKeyChecking=no -i /tmp/ssh_key service.yaml ubuntu@${EC2_IP}:/home/ubuntu/
+
+                            # SSH into the instance and perform Docker login and deployment
+                            ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
+                            echo "\$DOCKER_PASSWORD" | docker login -u "\$DOCKER_USERNAME" --password-stdin
+
+                            if ! minikube status | grep -q "Running"; then
+                                echo "Starting Minikube..."
+                                minikube start --driver=docker
+                            else
+                                echo "Minikube is already running."
+                            fi
+
+                            # Deploy the application using the Docker image
+                            kubectl apply -f /home/ubuntu/deployment.yaml
+                            kubectl apply -f /home/ubuntu/service.yaml
+                            # Expose the deployment
+                            kubectl expose deployment react-app --type=NodePort --port=80
+                            # Get the Minikube IP and NodePort
+                            minikube_ip=\$(minikube ip)
+                            kubectl get services react-app
+                            echo "Access your application at: http://\${minikube_ip}:<NodePort>"
+                            '
+                            """
+                        }
                     }
                 }
             }
