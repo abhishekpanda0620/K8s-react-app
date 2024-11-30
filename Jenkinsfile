@@ -29,7 +29,7 @@ pipeline {
                 withCredentials([file(credentialsId: 'EC2_KP', variable: 'SSH_KEY_FILE')]) {
                     script {
                         sh """
-                echo "\$SSH_KEY_FILE" > /tmp/ssh_key
+                cp ${SSH_KEY_FILE} /tmp/ssh_key
                 chmod 600 /tmp/ssh_key
                 ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
                 if ! minikube status | grep -q "Running"; then
