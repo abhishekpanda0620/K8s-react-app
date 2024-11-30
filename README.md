@@ -24,7 +24,7 @@ Before getting started, ensure you have the following installed:
 
 ## Installation
 
-1. **Clone the Repository**:
+ **Clone the Repository**:
 
    ```bash
    git clone https://github.com/yourusername/k8s-react-app.git
