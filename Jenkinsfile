@@ -1,17 +1,13 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_IMAGE = 'k8s-react-app' // Replace this with your actual Docker image name
-        DOCKER_REGISTRY = 'abhishek626/k8s-react-app'
+        DOCKER_IMAGE = 'abhishek626/k8s-react-app' // Correctly formatted with your Docker Hub username
         DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Jenkins credentials ID for Docker Hub
     }
-
     stages {
-
         stage('Build Docker Image') {
             steps {
-                // Build the Docker image
+                // Build the Docker image with the correct naming
                 sh 'docker build -t $DOCKER_IMAGE:latest .'
             }
         }
@@ -24,9 +20,10 @@ pipeline {
                     }
                 }
                 // Push the Docker image to the registry
-                sh "docker push $DOCKER_IMAGE:latest"
+                sh "docker push $DOCKER_IMAGE:latest" // Now it will push to abhishek626/k8s-react-app
             }
         }
+        // Uncomment the following block if you want to deploy to Kubernetes
         // stage('Deploy to Kubernetes') {
         //     steps {
         //         script {
@@ -38,7 +35,6 @@ pipeline {
         //     }
         // }
     }
-
     post {
         success {
             echo 'Deployment Successful!'
