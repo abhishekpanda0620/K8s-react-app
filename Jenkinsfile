@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        DOCKER_IMAGE = 'abhishek626/k8s-react-app' // Correctly formatted with your Docker Hub username
+        DOCKER_IMAGE = 'abhishek626/k8s-react-app' // Docker Hub image name
         DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Jenkins credentials ID for Docker Hub
         EC2_IP = '3.86.233.183'
     }
@@ -21,13 +21,12 @@ pipeline {
                     }
                 }
                 // Push the Docker image to the registry
-                sh "docker push $DOCKER_IMAGE:latest" // Now it will push to abhishek626/k8s-react-app
+                sh "docker push $DOCKER_IMAGE:latest" // Push to Docker Hub
             }
         }
         stage('Deploy to EC2 Minikube') {
             steps {
                 withCredentials([file(credentialsId: 'EC2_KP', variable: 'SSH_KEY_FILE')]) {
-                    // Retrieve Docker Hub credentials again for access within SSH
                     withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
                         script {
                             sh """
@@ -37,36 +36,31 @@ pipeline {
                             # Use scp to copy files from the Jenkins workspace to EC2
                             scp -o StrictHostKeyChecking=no -i /tmp/ssh_key deployment.yaml ubuntu@${EC2_IP}:/home/ubuntu/
                             scp -o StrictHostKeyChecking=no -i /tmp/ssh_key service.yaml ubuntu@${EC2_IP}:/home/ubuntu/
-
+                            
                             # SSH into the instance and perform Docker login and deployment
                             ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
                             echo "\$DOCKER_PASSWORD" | docker login -u "\$DOCKER_USERNAME" --password-stdin
-
                             if ! minikube status | grep -q "Running"; then
                                 echo "Starting Minikube..."
                                 minikube start --driver=docker
                             else
                                 echo "Minikube is already running."
                             fi
-
+                            
                             # Check and remove existing deployment and service
-                            if kubectl get deployment react-app; then
-                                kubectl delete deployment react-app
-                                echo "Deleted existing deployment."
-                            fi
-
-                            if kubectl get service react-app; then
-                                kubectl delete service react-app
-                                echo "Deleted existing service."
-                            fi
+                            kubectl get deployment react-app && kubectl delete deployment react-app || echo "No existing deployment to delete."
+                            kubectl get service react-app && kubectl delete service react-app || echo "No existing service to delete."
 
                             # Deploy the application using the new configuration
                             kubectl apply -f /home/ubuntu/deployment.yaml
                             kubectl apply -f /home/ubuntu/service.yaml
-                            # Get the Minikube IP and NodePort
+
+                            # Start port forwarding in the background
+                            nohup kubectl port-forward svc/react-app 80:80 --address 0.0.0.0 &
+                            
+                            # Print out the Minikube IP
                             minikube_ip=\$(minikube ip)
-                            kubectl get services react-app
-                            echo "Access your application at: http://\${minikube_ip}:<NodePort>"
+                            echo "Access your application at: http://\${EC2_IP}"
                             '
                             """
                         }
