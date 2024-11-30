@@ -24,21 +24,30 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>Todo List</h1>
-      <input
-        type="text"
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        placeholder="Add a new todo..."
-      />
-      <button onClick={handleAddTodo}>Add Todo</button>
-      <ul>
+    <div className="App container mt-5">
+      <h1 className="text-center">Todo List</h1>
+      <div className="input-group mb-3">
+        <input
+          type="text"
+          className="form-control"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          placeholder="Add a new todo..."
+        />
+        <div className="input-group-append">
+          <button className="btn btn-primary" onClick={handleAddTodo}>Add Todo</button>
+        </div>
+      </div>
+      <ul className="list-group">
         {todos.map((todo, index) => (
-          <li key={index} style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
-            {todo.text}
-            <button onClick={() => handleToggleComplete(index)}>Toggle Complete</button>
-            <button onClick={() => handleDeleteTodo(index)}>Delete</button>
+          <li key={index} className={`list-group-item d-flex justify-content-between align-items-center ${todo.completed ? 'list-group-item-success' : ''}`}>
+            <span style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}>
+              {todo.text}
+            </span>
+            <div>
+              <button className="btn btn-outline-success btn-sm" onClick={() => handleToggleComplete(index)}>Toggle Complete</button>
+              <button className="btn btn-outline-danger btn-sm" onClick={() => handleDeleteTodo(index)}>Delete</button>
+            </div>
           </li>
         ))}
       </ul>
