@@ -11,7 +11,7 @@ RUN npm install
 
 # Now copy the rest of the application code
 COPY app/ ./
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Build the application
 RUN npm run build
 
