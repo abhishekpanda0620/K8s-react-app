@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'k8s-react-app' // Replace this with your actual Docker image name
-        DOCKER_REGISTRY = 'abhishek626/abhishek626'  // e.g., docker.io/yourusername
+        DOCKER_REGISTRY = 'abhishek626/k8s-react-app'
         DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Jenkins credentials ID for Docker Hub
     }
 
