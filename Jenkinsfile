@@ -34,6 +34,7 @@ pipeline {
                 # Use scp to copy files from the Jenkins workspace to EC2
                 scp -o StrictHostKeyChecking=no -i /tmp/ssh_key deployment.yaml ubuntu@${EC2_IP}:/home/ubuntu/
                 scp -o StrictHostKeyChecking=no -i /tmp/ssh_key service.yaml ubuntu@${EC2_IP}:/home/ubuntu/
+                scp -o StrictHostKeyChecking=no -i ~/.docker/config.json ubuntu@${EC2_IP}:~/.docker/config.json
                 ssh -o StrictHostKeyChecking=no -i /tmp/ssh_key ubuntu@${EC2_IP} '
                 if ! minikube status | grep -q "Running"; then
                     echo "Starting Minikube..."
