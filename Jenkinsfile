@@ -84,19 +84,7 @@ pipeline {
     }
     post {
         success {
-            script {
-                // Stop port forwarding if the PID exists
-                sh """
-                if [ -f port_forwarding_pid.txt ]; then
-                    PID=\$(cat port_forwarding_pid.txt)
-                    if ps -p \$PID > /dev/null; then
-                        ssh -i /tmp/ssh_key ubuntu@${EC2_IP} kill \$PID || echo "No such process to kill."
-                    else
-                        echo "Port forwarding process does not exist."
-                    fi
-                fi
-                """
-            }
+
             echo 'Deployment Successful! Access your app via the provided URL.'
         }
         failure {
