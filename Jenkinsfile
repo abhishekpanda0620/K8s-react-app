@@ -62,7 +62,7 @@ pipeline {
                             echo "Pod is running!"
 
                             # Start port forwarding in the background and redirect output
-                            nohup kubectl port-forward svc/react-app 80:3000 --address 0.0.0.0 > port-forward.log 2>&1 &
+                            nohup kubectl port-forward svc/react-app 3000:80 --address 0.0.0.0 > port-forward.log 2>&1 &
                             echo "\$!" > port_forwarding_pid.txt  # Save the PID of the port-forward process
                             
                             # Print out the EC2 public IP for accessing the app
